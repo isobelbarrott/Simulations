@@ -91,22 +91,22 @@ names(betaLong_SBP_Z)<-
 b_sd = c(0.6487523,0.6948037,0.1620254,0.2143920)
 b_rho = matrix(c( 1    , 0.173,-0.112,-0.133,
                   0.173, 1    ,-0.072,-0.269,
-                 -0.112,-0.072, 1    , 0.191,
-                 -0.133,-0.269, 0.191,  1     ),4,4,byrow=TRUE)
+                  -0.112,-0.072, 1    , 0.191,
+                  -0.133,-0.269, 0.191,  1     ),4,4,byrow=TRUE)
 
-betaEvent_Z = c(0,0.225153816,0.393029017,0.129149094,-0.271772590,
-                0,0.164852383,0.606184221,
-                0,0.538182972,
-                0,0.127009711,0.161876783,0.219585816,0.350836288,
-                0,0.798968864,
-                0,0.017904010,
-                0,0.264947481,
-                0,0.289408019,##############
-                0.18618471,
-                0.10500799,
-                1.070797610,
-                -0.115544944,
-                -0.236290695)
+betaEvent_Z = c(0,0.22635722,0.39120690,0.12739327,-0.26949379,
+                0,0.16521979,0.60422111,
+                0,0.52870299,
+                0,0.12739627,0.16064562,0.21822776,0.34931682,
+                0,0.79911609,
+                0,0.01261087,
+                0,0.26236855,
+                0,0.28918990
+                -0.94760190,
+                -0.47114811,
+                1.05759181,
+                -0.07443217,
+                -0.23095285)
 names(betaEvent_Z)<-
   c("European","Pacific","NZMaori","Indian","Chinese_other_Asian",
     "Non_smoker","Ex_smoker","Smoker",
@@ -115,7 +115,7 @@ names(betaEvent_Z)<-
     "No_atrial_fibrillation","Atrial_fibrillation",
     "No_lipid_med","Lipid_med",
     "No_bp_med","Bp_med",
-    "No_antithrombotic_med","Antithrombotic_med",############
+    "No_antithrombotic_med","Antithrombotic_med",
     "SBP_slope",
     "TCHDL_slope",
     "Age_start",
@@ -123,19 +123,19 @@ names(betaEvent_Z)<-
     "Age_start:Diabetes"
   )
 
-betaEvent_shape<-0.111397164
-betaEvent_scale<--5.562360931
+betaEvent_shape<-0.11219950
+betaEvent_scale<--5.57556619
 betaEvent_lambda<-exp(betaEvent_shape)
 betaEvent_gamma<-exp(betaEvent_scale)
 
-betaEvent_SBP_assoc = c(0.386539482)
-betaEvent_TCHDL_assoc = c(0.179237736)
+betaEvent_SBP_assoc = c(0.36482246)
+betaEvent_TCHDL_assoc = c(0.15968587)
 
 jm_hazard<-function(t, x, betas, M = 1,
                     trajectory = "linear", assoc = "etavalue",
                     family = list(gaussian()), grp_assoc = NULL){
   if (t == 0){return(0)}
-
+  
   etavalues<-lapply(long_names,function(m){
     name_response <- paste0("Long_",m)
     etavalue <-
@@ -163,9 +163,9 @@ jm_hazard<-function(t, x, betas, M = 1,
       betas[[name_response]][[paste0("betaLong_",m,"_Bp_med")]] * x[["Bp_medBp_med"]]+
       betas[[name_response]][[paste0("betaLong_",m,"_No_antithrombotic_med")]] * x[["Antithrombotic_medNo_antithrombotic_med"]]+
       betas[[name_response]][[paste0("betaLong_",m,"_Antithrombotic_med")]] * x[["Antithrombotic_medAntithrombotic_med"]]+
-      betas[[name_response]][[paste0("betaLong_",m,"_fixed_linear")]] * (x[["Age_start"]] + t) +
+      betas[[name_response]][[paste0("betaLong_",m,"_fixed_linear")]] * (x[["Age_start"]] + t/sd_response_time_F) +
       betas[[name_response]][[paste0("betaLong_",m,"_random_intercept")]] +
-      betas[[name_response]][[paste0("betaLong_",m,"_random_linear")]] * (x[["Age_start"]] + t)
+      betas[[name_response]][[paste0("betaLong_",m,"_random_linear")]] * (x[["Age_start"]] + t/sd_response_time_F)
     etavalue
   })
   names(etavalues)<-paste0("etavalue_",long_names)
@@ -197,12 +197,12 @@ jm_hazard<-function(t, x, betas, M = 1,
       betas[["Event"]][["betaEvent_No_antithrombotic_med"]] * x[["Antithrombotic_medNo_antithrombotic_med"]] +
       betas[["Event"]][["betaEvent_Antithrombotic_med"]] * x[["Antithrombotic_medAntithrombotic_med"]]+
       betas[["Event"]][["betaEvent_SBP_assoc"]] * etavalues[["etavalue_SBP"]] +
-      betas[["Event"]][["betaEvent_TCHDL_assoc"]] * etavalues[["etavalue_TCHDL"]]+ 
-      betas[["Event"]][["betaEvent_SBP_slope"]] * betas[["Long_SBP"]][[paste0("betaLong_SBP_random_linear")]] + 
-      betas[["Event"]][["betaEvent_TCHDL_slope"]] * betas[["Long_TCHDL"]][[paste0("betaLong_TCHDL_random_linear")]] +  
-      betas[["Event"]][["betaEvent_Age_start"]] * (x[["Age_start"]]) + 
-      betas[["Event"]][["betaEvent_Age_start:SBP"]] * etavalues[["etavalue_SBP"]] * (x[["Age_start"]]) + 
-      betas[["Event"]][["betaEvent_Age_start:Diabetes"]] * x[["DiabetesDiabetes"]] * (x[["Age_start"]]) 
+      betas[["Event"]][["betaEvent_TCHDL_assoc"]] * etavalues[["etavalue_TCHDL"]]+
+      betas[["Event"]][["betaEvent_SBP_slope"]] * betas[["Long_SBP"]][[paste0("betaLong_SBP_random_linear")]] +
+      betas[["Event"]][["betaEvent_TCHDL_slope"]] * betas[["Long_TCHDL"]][[paste0("betaLong_TCHDL_random_linear")]] +
+      betas[["Event"]][["betaEvent_Age_start"]] * x[["Age_start"]] +
+      betas[["Event"]][["betaEvent_Age_start:SBP"]] * etavalues[["etavalue_SBP"]] * x[["Age_start"]] +
+      betas[["Event"]][["betaEvent_Age_start:Diabetes"]] * x[["DiabetesDiabetes"]] * x[["Age_start"]]
   )
   
   h <- phi_event * betaEvent_lambda * betaEvent_gamma * t^(betaEvent_lambda-1)
@@ -212,6 +212,9 @@ jm_hazard<-function(t, x, betas, M = 1,
   return(h)
 }
 
+
+
+#############
 Ethnicity<-factor(sample(x=c("European","Pacific","NZMaori","Indian","Chinese_other_Asian"),
                          prob = c(117379,26882,28360,16564,22069)/211253,
                          replace = TRUE,
@@ -245,6 +248,7 @@ Antithrombotic_med<-factor(sample(x=c("No_antithrombotic_med","Antithrombotic_me
                                   replace=TRUE,
                                   size=n),levels=c("No_antithrombotic_med","Antithrombotic_med"))
 Age_start<-(runif(n,min=25, max=80)-mean_response_time_F)/sd_response_time_F
+
 
 Z<-data.frame(Ethnicity,Smoking,Diabetes,NZDep,Atrial_fibrillation,Lipid_med,Bp_med,Antithrombotic_med)
 Z<-model.matrix(~-1+.,data=Z,contrasts.arg = lapply(Z,contrasts,contrasts=FALSE))
