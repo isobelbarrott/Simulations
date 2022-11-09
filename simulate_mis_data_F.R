@@ -7,7 +7,6 @@ library(simsurv)
 library(parallel)
 library(riskRegression)
 source("~/simulation/landmarking_functions.R")
-#source("~/Work_laptop_22012022/Simulate_data/landmarking_functions.R")
 
 set.seed(seed)
 n<-100000
@@ -95,22 +94,22 @@ names(betaLong_SBP_Z)<-
 b_sd = c(0.6487523,0.6948037,0.1620254,0.2143920)
 b_rho = matrix(c( 1    , 0.173,-0.112,-0.133,
                   0.173, 1    ,-0.072,-0.269,
-                 -0.112,-0.072, 1    , 0.191,
-                 -0.133,-0.269, 0.191,  1     ),4,4,byrow=TRUE)
+                  -0.112,-0.072, 1    , 0.191,
+                  -0.133,-0.269, 0.191,  1     ),4,4,byrow=TRUE)
 
-betaEvent_Z = c(0,0.225153816,0.393029017,0.129149094,-0.271772590,
-                0,0.164852383,0.606184221,
-                0,0.538182972,
-                0,0.127009711,0.161876783,0.219585816,0.350836288,
-                0,0.798968864,
-                0,0.017904010,
-                0,0.264947481,
-                0,0.289408019,
-                0.18618471,
-                0.10500799,
-                1.070797610,
-                -0.115544944,
-                -0.236290695)
+betaEvent_Z = c(0,0.22635722,0.39120690,0.12739327,-0.26949379,
+                0,0.16521979,0.60422111,
+                0,0.52870299,
+                0,0.12739627,0.16064562,0.21822776,0.34931682,
+                0,0.79911609,
+                0,0.01261087,
+                0,0.26236855,
+                0,0.28918990,
+                -0.94760190,#0.18618471,
+                -0.47114811,#0.10500799,
+                1.05759181,
+                -0.07443217,
+                -0.23095285)
 names(betaEvent_Z)<-
   c("European","Pacific","NZMaori","Indian","Chinese_other_Asian",
     "Non_smoker","Ex_smoker","Smoker",
@@ -127,13 +126,13 @@ names(betaEvent_Z)<-
     "Age_start:Diabetes"
   )
 
-betaEvent_shape<-0.111397164
-betaEvent_scale<--5.562360931
+betaEvent_shape<-0.11219950
+betaEvent_scale<--5.57556619
 betaEvent_lambda<-exp(betaEvent_shape)
 betaEvent_gamma<-exp(betaEvent_scale)
 
-betaEvent_SBP_assoc = c(0.386539482)
-betaEvent_TCHDL_assoc = c(0.179237736)
+betaEvent_SBP_assoc = c(0.36482246)
+betaEvent_TCHDL_assoc = c(0.15968587)
 
 jm_hazard<-function(t, x, betas, M = 1,
                     trajectory = "linear", assoc = "etavalue",
@@ -142,33 +141,33 @@ jm_hazard<-function(t, x, betas, M = 1,
   etavalues<-lapply(long_names,function(m){
     name_response <- paste0("Long_",m)
     etavalue <- betas[[name_response]][[paste0("betaLong_",m,"_fixed_intercept")]] +
-                      betas[[name_response]][[paste0("betaLong_",m,"_European")]] * x[["EthnicityEuropean"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Pacific")]] * x[["EthnicityPacific"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_NZMaori")]] * x[["EthnicityNZMaori"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Indian")]] * x[["EthnicityIndian"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Chinese_other_Asian")]] * x[["EthnicityChinese_other_Asian"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Non_smoker")]] * x[["SmokingNon_smoker"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Ex_smoker")]] * x[["SmokingEx_smoker"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Smoker")]] * x[["SmokingSmoker"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_No_Diabetes")]] * x[["DiabetesNo_Diabetes"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Diabetes")]] * x[["DiabetesDiabetes"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_NZDep1")]] * x[["NZDepNZDep1"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_NZDep2")]] * x[["NZDepNZDep2"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_NZDep3")]] * x[["NZDepNZDep3"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_NZDep4")]] * x[["NZDepNZDep4"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_NZDep5")]] * x[["NZDepNZDep5"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_No_atrial_fibrillation")]] * x[["Atrial_fibrillationNo_atrial_fibrillation"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Atrial_fibrillation")]] * x[["Atrial_fibrillationAtrial_fibrillation"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_No_lipid_med")]] * x[["Lipid_medNo_lipid_med"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Lipid_med")]] * x[["Lipid_medLipid_med"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_No_bp_med")]] * x[["Bp_medNo_bp_med"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Bp_med")]] * x[["Bp_medBp_med"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_No_antithrombotic_med")]] * x[["Antithrombotic_medNo_antithrombotic_med"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_Antithrombotic_med")]] * x[["Antithrombotic_medAntithrombotic_med"]]+
-                      betas[[name_response]][[paste0("betaLong_",m,"_fixed_linear")]] * (x[["Age_start"]] + t) +
-                      betas[[name_response]][[paste0("betaLong_",m,"_random_intercept")]] +
-                      betas[[name_response]][[paste0("betaLong_",m,"_random_linear")]] * (x[["Age_start"]] + t)+
-                      betas[[name_response]][[paste0("beta_2_",m)]]*sqrt((t-betas[[name_response]][[paste0("tau_",m)]])^2)
+      betas[[name_response]][[paste0("betaLong_",m,"_European")]] * x[["EthnicityEuropean"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Pacific")]] * x[["EthnicityPacific"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_NZMaori")]] * x[["EthnicityNZMaori"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Indian")]] * x[["EthnicityIndian"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Chinese_other_Asian")]] * x[["EthnicityChinese_other_Asian"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Non_smoker")]] * x[["SmokingNon_smoker"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Ex_smoker")]] * x[["SmokingEx_smoker"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Smoker")]] * x[["SmokingSmoker"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_No_Diabetes")]] * x[["DiabetesNo_Diabetes"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Diabetes")]] * x[["DiabetesDiabetes"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_NZDep1")]] * x[["NZDepNZDep1"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_NZDep2")]] * x[["NZDepNZDep2"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_NZDep3")]] * x[["NZDepNZDep3"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_NZDep4")]] * x[["NZDepNZDep4"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_NZDep5")]] * x[["NZDepNZDep5"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_No_atrial_fibrillation")]] * x[["Atrial_fibrillationNo_atrial_fibrillation"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Atrial_fibrillation")]] * x[["Atrial_fibrillationAtrial_fibrillation"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_No_lipid_med")]] * x[["Lipid_medNo_lipid_med"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Lipid_med")]] * x[["Lipid_medLipid_med"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_No_bp_med")]] * x[["Bp_medNo_bp_med"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Bp_med")]] * x[["Bp_medBp_med"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_No_antithrombotic_med")]] * x[["Antithrombotic_medNo_antithrombotic_med"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_Antithrombotic_med")]] * x[["Antithrombotic_medAntithrombotic_med"]]+
+      betas[[name_response]][[paste0("betaLong_",m,"_fixed_linear")]] * (x[["Age_start"]] + t/sd_response_time_F) +
+      betas[[name_response]][[paste0("betaLong_",m,"_random_intercept")]] +
+      betas[[name_response]][[paste0("betaLong_",m,"_random_linear")]] * (x[["Age_start"]] + t/sd_response_time_F)+
+      betas[[name_response]][[paste0("beta_2_",m)]]*sqrt((x[["Age_start"]] + t/sd_response_time_F-betas[[name_response]][[paste0("tau_",m)]])^2)
     etavalue
   })
   names(etavalues)<-paste0("etavalue_",long_names)
@@ -200,9 +199,9 @@ jm_hazard<-function(t, x, betas, M = 1,
       betas[["Event"]][["betaEvent_No_antithrombotic_med"]] * x[["Antithrombotic_medNo_antithrombotic_med"]] +
       betas[["Event"]][["betaEvent_Antithrombotic_med"]] * x[["Antithrombotic_medAntithrombotic_med"]]+
       betas[["Event"]][["betaEvent_SBP_assoc"]] * etavalues[["etavalue_SBP"]] +
-      betas[["Event"]][["betaEvent_TCHDL_assoc"]] * etavalues[["etavalue_TCHDL"]]+ 
-      betas[["Event"]][["betaEvent_SBP_slope"]] * betas[["Long_SBP"]][[paste0("betaLong_SBP_random_linear")]] + 
-      betas[["Event"]][["betaEvent_TCHDL_slope"]] * betas[["Long_TCHDL"]][[paste0("betaLong_TCHDL_random_linear")]] +  
+      betas[["Event"]][["betaEvent_TCHDL_assoc"]] * etavalues[["etavalue_TCHDL"]]+
+      betas[["Event"]][["betaEvent_SBP_slope"]] * betas[["Long_SBP"]][[paste0("betaLong_SBP_random_linear")]] +
+      betas[["Event"]][["betaEvent_TCHDL_slope"]] * betas[["Long_TCHDL"]][[paste0("betaLong_TCHDL_random_linear")]] +
       betas[["Event"]][["betaEvent_Age_start"]] * (x[["Age_start"]]) +
       betas[["Event"]][["betaEvent_Age_start:SBP"]] * etavalues[["etavalue_SBP"]] * (x[["Age_start"]]) +
       betas[["Event"]][["betaEvent_Age_start:Diabetes"]] * x[["DiabetesDiabetes"]] * (x[["Age_start"]])
@@ -214,6 +213,9 @@ jm_hazard<-function(t, x, betas, M = 1,
   return(h)
 }
 
+
+
+#############
 Ethnicity<-factor(sample(x=c("European","Pacific","NZMaori","Indian","Chinese_other_Asian"),
                          prob = c(117379,26882,28360,16564,22069)/211253,
                          replace = TRUE,
